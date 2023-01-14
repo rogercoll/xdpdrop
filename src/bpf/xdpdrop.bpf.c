@@ -13,7 +13,7 @@ struct {
         __uint(max_entries, 1);
 } counter SEC(".maps");
 
-SEC("xdp_drop")
+SEC("xdp")
 int xdp_drop_prog(struct xdp_md *ctx)
 {
     // start and end of packet data
@@ -35,12 +35,10 @@ int xdp_drop_prog(struct xdp_md *ctx)
     if (data + sizeof(struct ethhdr) + sizeof(struct iphdr) > data_end)
         return XDP_ABORTED;
 
-    if (iph->protocol != IPPROTO_TCP)
-        return XDP_PASS;
 
     if (iph->saddr == DROP_IP_ADDRESS)
     {
-        bpf_printk("Dropping packet from %x", iph->saddr);
+        bpf_printk("[RS] Dropping packet from %x", iph->saddr);
         value = bpf_map_lookup_elem(&counter, &key);
         if (value)
             *value += 1;
