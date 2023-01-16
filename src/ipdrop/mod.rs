@@ -60,7 +60,7 @@ unsafe fn xdp_detach(interface_id: i32, mode: u32) -> Result<()> {
     Ok(())
 }
 
-pub fn drop_packets(a: u8, b: u8, c: u8, d: u8) -> Result<()> {
+pub fn drop_ipv4_packets(target_ips: &[Ipv4Addr]) -> Result<()> {
     let mut skel_builder = XdpdropSkelBuilder::default();
     skel_builder.obj_builder.debug(true);
     let open_skel = skel_builder.open()?;
@@ -83,13 +83,13 @@ pub fn drop_packets(a: u8, b: u8, c: u8, d: u8) -> Result<()> {
         unsafe { attach_xdp_best_available(interface_id, skel.progs_mut().xdp_drop_prog().fd())? };
 
     let vals: u32 = 0;
-    let target: u32 = Ipv4Addr::new(a, b, c, d).into();
-    // IP address must be encoded as big endian notation
-    skel.maps_mut().source_ips().update(
-        &target.to_be_bytes(),
-        &vals.to_ne_bytes(),
-        MapFlags::ANY,
-    )?;
+    for ip in target_ips.iter() {
+        // IP address must be encoded as big endian notation
+        let target = u32::from(*ip).to_be_bytes();
+        skel.maps_mut()
+            .source_ips()
+            .update(&target, &vals.to_ne_bytes(), MapFlags::ANY)?;
+    }
 
     println!("\nXDPDrop started");
     while running.load(std::sync::atomic::Ordering::SeqCst) {
