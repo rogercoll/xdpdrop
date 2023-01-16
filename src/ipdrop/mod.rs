@@ -60,7 +60,7 @@ unsafe fn xdp_detach(interface_id: i32, mode: u32) -> Result<()> {
     Ok(())
 }
 
-pub fn drop_ipv4_packets(target_ips: &[Ipv4Addr]) -> Result<()> {
+pub fn drop_ipv4_packets(target_ips: Vec<Ipv4Addr>) -> Result<()> {
     let mut skel_builder = XdpdropSkelBuilder::default();
     skel_builder.obj_builder.debug(true);
     let open_skel = skel_builder.open()?;
