@@ -1,8 +1,8 @@
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <linux/if_ether.h>
-#include <arpa/inet.h>
 #include <linux/ip.h>
+#include <bpf/bpf_endian.h>
 
 #define DROP_IP_ADDRESS (unsigned int)(147 + (83 << 8) + (249 << 16) + (103 << 24))
 
@@ -28,7 +28,7 @@ int xdp_drop_prog(struct xdp_md *ctx)
     if (data + sizeof(struct ethhdr) > data_end)
         return XDP_ABORTED;
 
-    if (ntohs(eth->h_proto) != ETH_P_IP)
+    if (eth->h_proto != bpf_htons(ETH_P_IP))
         return XDP_PASS;
 
     struct iphdr *iph = data + sizeof(struct ethhdr);
