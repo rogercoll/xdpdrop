@@ -1,10 +1,9 @@
-#include <linux/bpf.h>
-#include <bpf/bpf_helpers.h>
-#include <linux/if_ether.h>
-#include <linux/ip.h>
+#include "vmlinux.h"
 #include <bpf/bpf_endian.h>
+#include <bpf/bpf_helpers.h>
 
 #define DROP_IP_ADDRESS (unsigned int)(147 + (83 << 8) + (249 << 16) + (103 << 24))
+#define ETH_P_IP        0x0800
 
 struct {
         __uint(type, BPF_MAP_TYPE_HASH);
