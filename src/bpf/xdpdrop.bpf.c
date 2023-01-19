@@ -2,7 +2,6 @@
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_helpers.h>
 
-#define DROP_IP_ADDRESS (unsigned int)(147 + (83 << 8) + (249 << 16) + (103 << 24))
 #define ETH_P_IP        0x0800
 
 struct {
@@ -40,12 +39,6 @@ int xdp_drop_prog(struct xdp_md *ctx)
     if (value) {
         bpf_printk("[RS] Dropping packet from source_ips map %x", iph->saddr);
         *value += 1;
-        return XDP_ABORTED;
-    }
-
-    if (iph->saddr == DROP_IP_ADDRESS)
-    {
-        bpf_printk("[RS] Dropping packet from %x", iph->saddr);
         return XDP_ABORTED;
     }
 
