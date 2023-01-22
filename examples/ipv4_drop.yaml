@@ -1,3 +1,7 @@
 ipv4s:
   - 8.8.8.8
   - 142.250.184.174
+dns:
+  - microbit.org
+  - sport.es
+  - amazon.es

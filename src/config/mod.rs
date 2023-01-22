@@ -6,6 +6,7 @@ use std::io::Read;
 #[derive(Deserialize)]
 pub(crate) struct Config {
     pub(crate) ipv4s: Vec<String>,
+    pub(crate) dns: Vec<String>,
 }
 
 impl Config {
