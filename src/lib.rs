@@ -1,8 +1,9 @@
-use std::{net::Ipv4Addr, str::FromStr};
+use std::{net::Ipv4Addr, str::FromStr, vec};
 
 use anyhow::{bail, Result};
 
 mod config;
+mod dnsdrop;
 mod ipdrop;
 mod xdp;
 
@@ -32,5 +33,15 @@ pub fn drop(config_file: &str) -> Result<()> {
 
     bump_memlock_rlimit()?;
 
-    ipdrop::drop_ipv4_packets(ipv4s)
+    std::thread::spawn(|| ipdrop::drop_ipv4_packets(ipv4s));
+
+    dnsdrop::drop_dns(vec![
+        "fib.upc.edu".to_string(),
+        "tutanota.io".to_string(),
+        "crates.io".to_string(),
+        "microbit.org".to_string(),
+        "github.com".to_string(),
+        "amazones".to_string(),
+        "sport.es".to_string(),
+    ])
 }
