@@ -3,10 +3,12 @@ use std::{net::Ipv4Addr, str::FromStr};
 use anyhow::{bail, Result};
 
 mod config;
-mod ipdrop;
+mod drop;
 mod xdp;
 
 use config::Config;
+
+use crossbeam_channel::{bounded, Receiver};
 
 fn bump_memlock_rlimit() -> Result<()> {
     let rlimit = libc::rlimit {
@@ -21,6 +23,15 @@ fn bump_memlock_rlimit() -> Result<()> {
     Ok(())
 }
 
+fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
+    let (sender, receiver) = bounded(100);
+    ctrlc::set_handler(move || {
+        let _ = sender.send(());
+    })?;
+
+    Ok(receiver)
+}
+
 pub fn drop(config_file: &str) -> Result<()> {
     let conf = Config::new(&config_file).unwrap();
 
@@ -32,5 +43,7 @@ pub fn drop(config_file: &str) -> Result<()> {
 
     bump_memlock_rlimit()?;
 
-    ipdrop::drop_ipv4_packets(ipv4s)
+    let ctrl_c_events = ctrl_channel()?;
+
+    drop::xdp_drop(ipv4s, conf.dns, ctrl_c_events)
 }

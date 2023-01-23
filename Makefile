@@ -3,5 +3,5 @@ build: src/bpf/xdpdrop.bpf.c
 .PHONY: build
 
 run: build
-	sudo target/debug/xdpdrop --file ./examples/ipv4_drop.yaml
+	sudo target/debug/main --file ./examples/ipv4_drop.yaml
 .PHONY: build
