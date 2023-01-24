@@ -47,6 +47,8 @@ pub fn xdp_drop(
             .update(&target, &vals.to_ne_bytes(), MapFlags::ANY)?;
     }
 
+    println!("\nLoaded {} domain names", target_dns.len());
+    println!("\nLoaded {} IPs", target_ips.len());
     println!("\nXDPDrop started");
 
     let ticks = tick(Duration::from_secs(10));

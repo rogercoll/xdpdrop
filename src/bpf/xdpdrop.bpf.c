@@ -6,7 +6,7 @@
 
 #define ETH_P_IP        0x0800
 #define MAX_DNS_NAME_LENGTH 128
-#define MAX_ENTRIES 1024
+#define MAX_ENTRIES 1024*1024
 
 // Based on: https://github.com/boratanrikulu/durdur/blob/main/internal/ebpf-c/xdp.c
 
