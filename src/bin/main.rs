@@ -5,13 +5,13 @@ use argh::FromArgs;
 /// xdpdrop CLI config
 struct CLI {
     /// dns blocklist file
-    #[argh(option, short = 'd')]
+    #[argh(option)]
     dns_list: Option<String>,
     /// ip blocklist file
-    #[argh(option, short = 'i')]
+    #[argh(option)]
     ip_list: Option<String>,
     /// device interface name to attach the xdp program into
-    #[argh(option)]
+    #[argh(option, short = 'i')]
     interface: String,
 }
 

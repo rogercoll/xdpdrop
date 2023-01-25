@@ -14,21 +14,18 @@ use xdpdrop::*;
 use crate::xdp::helpers::{attach_xdp_best_available, xdp_detach};
 
 pub fn xdp_drop(
+    device_id: i32,
     target_ips: Vec<Ipv4Addr>,
     target_dns: Vec<String>,
     done: Receiver<()>,
 ) -> Result<()> {
-    let mut skel_builder = XdpdropSkelBuilder::default();
-    skel_builder.obj_builder.debug(true);
+    let skel_builder = XdpdropSkelBuilder::default();
+    // skel_builder.obj_builder.debug(true);
     let open_skel = skel_builder.open()?;
-
-    // vars
-    let interface_id = 2;
 
     let mut skel = open_skel.load()?;
 
-    let mode =
-        unsafe { attach_xdp_best_available(interface_id, skel.progs_mut().xdp_drop().fd())? };
+    let mode = unsafe { attach_xdp_best_available(device_id, skel.progs_mut().xdp_drop().fd())? };
 
     let vals: u32 = 0;
     for dns in target_dns.iter() {
@@ -63,5 +60,5 @@ pub fn xdp_drop(
             }
         }
     }
-    unsafe { xdp_detach(interface_id, mode) }
+    unsafe { xdp_detach(device_id, mode) }
 }

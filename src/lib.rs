@@ -1,4 +1,4 @@
-use std::net::Ipv4Addr;
+use std::{ffi::CString, net::Ipv4Addr};
 
 use anyhow::{bail, Result};
 
@@ -30,8 +30,9 @@ fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
     Ok(receiver)
 }
 
-pub fn drop(interface: &str, ips_file: Option<String>, dns_file: Option<String>) -> Result<()> {
-    let ifidx = unsafe { libc::if_nametoindex(interface.into_raw()) };
+pub fn drop(dev_name: &str, ips_file: Option<String>, dns_file: Option<String>) -> Result<()> {
+    // get device id
+    let dev_id = unsafe { libc::if_nametoindex(CString::new(dev_name)?.into_raw()) };
 
     bump_memlock_rlimit()?;
 
@@ -47,5 +48,5 @@ pub fn drop(interface: &str, ips_file: Option<String>, dns_file: Option<String>)
         dns = config::dnslist::from_file(&dns_file)?
     }
 
-    drop::xdp_drop(ips, dns, ctrl_c_events)
+    drop::xdp_drop(dev_id as i32, ips, dns, ctrl_c_events)
 }
