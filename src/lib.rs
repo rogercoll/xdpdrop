@@ -1,12 +1,10 @@
-use std::{net::Ipv4Addr, str::FromStr};
+use std::{ffi::CString, net::Ipv4Addr};
 
 use anyhow::{bail, Result};
 
 mod config;
 mod drop;
 mod xdp;
-
-use config::Config;
 
 use crossbeam_channel::{bounded, Receiver};
 
@@ -32,18 +30,23 @@ fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
     Ok(receiver)
 }
 
-pub fn drop(config_file: &str) -> Result<()> {
-    let conf = Config::new(&config_file).unwrap();
-
-    let ipv4s = conf
-        .ipv4s
-        .iter()
-        .map(|ip| Ipv4Addr::from_str(ip).unwrap())
-        .collect();
+pub fn drop(dev_name: &str, ips_file: Option<String>, dns_file: Option<String>) -> Result<()> {
+    // get device id
+    let dev_id = unsafe { libc::if_nametoindex(CString::new(dev_name)?.into_raw()) };
 
     bump_memlock_rlimit()?;
 
     let ctrl_c_events = ctrl_channel()?;
+    let mut ips: Vec<Ipv4Addr> = Vec::new();
+    let mut dns: Vec<String> = Vec::new();
 
-    drop::xdp_drop(ipv4s, conf.dns, ctrl_c_events)
+    if let Some(ips_file) = ips_file {
+        ips = config::iplist::from_file(&ips_file)?
+    }
+
+    if let Some(dns_file) = dns_file {
+        dns = config::dnslist::from_file(&dns_file)?
+    }
+
+    drop::xdp_drop(dev_id as i32, ips, dns, ctrl_c_events)
 }
